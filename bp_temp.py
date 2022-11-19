@@ -1,150 +1,167 @@
-import numpy as np
 import pandas as pd
-import time
+import numpy as np
+import datetime
 
 
 def sigmoid(x):
-    return 1.0 / (1 + np.exp(-x))
-
+    return 1.0 /(1 + np.exp(-x))
 
 def d_sigmoid(x):
     return sigmoid(x) * (1 - sigmoid(x))
 
-
-def init_network(n_x, n_h, n_y):
-    theta_1 = np.random.randn(n_x, n_h) * 0.01
-    theta_2 = np.random.randn(n_h, n_y) * 0.01
-    network = {'theta_1': theta_1, 'theta_2': theta_2}
-    return network
+def d_tanh(x):
+    return 1 - np.power(np.tanh(x),2)
 
 
-def forward_propagation(X, network):
-    theta_1 = network['theta_1']
-    theta_2 = network['theta_2']
-    z1 = X @ theta_1
+# 1.初始化参数
+def initialize_parameters(n_x, n_h, n_y):
+    # np.random.seed(1)
+    w1 = np.random.randn(n_h, n_x) * 0.01
+    w2 = np.random.randn(n_y, n_h) * 0.01
+    parameters = {'w1': w1, 'w2': w2}
+    return parameters
+
+
+# 2.前向传播
+def forward_propagation(X, parameters):
+    w1 = parameters['w1']
+    w2 = parameters['w2']
+    z1 = np.dot(w1, X)
     a1 = sigmoid(z1)
-    z2 = a1 @ theta_2
+    z2 = np.dot(w2, a1)
     a2 = sigmoid(z2)
+    cache = {'z1': z1, 'a1': a1, 'z2': z2, 'a2': a2}
+    return a2, cache
 
-    trace = {'z1': z1, 'a1': a1, 'z2': z2, 'a2': a2}
-    return trace
 
-
-def loss_cross_entropy(y_pre, Y):
-    # 交叉熵
+# 3.计算代价函数
+def compute_cost(a2, Y):
     m = Y.shape[1]
-    logprobs = np.multiply(np.log(y_pre + 1e-6), Y) + np.multiply((1 - Y), np.log(1 - y_pre + 1e-6))
+    logprobs = np.multiply(np.log((1+a2)/2+1e-6), Y) + np.multiply((1 - Y), np.log(1 - (1+a2)/2 + 1e-6))
     cost = - np.sum(logprobs) / m
     return cost
 
 
-def backward_propagation(network, trace, X, Y):
+def backward_propagation(parameters, cache, X, Y):
     m = Y.shape[1]
 
-    theta_2 = network['theta_2']
+    w2 = parameters['w2']
 
-    a1 = trace['a1']
-    a2 = trace['a2']
+    a1 = cache['a1']
+    a2 = cache['a2']
 
-    d_z_2 = a2 - Y
-    d_theta_2 = (1 / m) * a1.T @ d_z_2
-    d_z_1 = np.multiply(d_z_2 @ theta_2.T,
-                                  d_sigmoid(a1))
-    d_theta_1 = (1 / m) * X.T @ d_z_1
+    dz2 = a2 - Y
+    dw2 = (1 / m) * np.dot(dz2, a1.T)
+    dz1 = np.multiply(np.dot(w2.T, dz2),d_sigmoid(a1))
+    dw1 = (1 / m) * np.dot(dz1, X.T)
 
-    grads = {'d_theta_1': d_theta_1, 'd_theta_2': d_theta_2}
+    grads = {'dw1': dw1, 'dw2': dw2}
 
     return grads
 
 
-def update_network(network, grads, learning_rate=0.02):
-    theta_1 = network['theta_1']
-    theta_2 = network['theta_2']
+def update_parameters(parameters, grads, learning_rate=0.02):
+    w1 = parameters['w1']
+    w2 = parameters['w2']
 
-    d_theta_1 = grads['d_theta_1']
-    d_theta_2 = grads['d_theta_2']
+    dw1 = grads['dw1']
+    dw2 = grads['dw2']
+    # 更新参数
+    w1 = w1 - dw1 * learning_rate
+    w2 = w2 - dw2 * learning_rate
 
-    theta_1 = theta_1 - d_theta_1 * learning_rate
-    theta_2 = theta_2 - d_theta_2 * learning_rate
+    parameters = {'w1': w1, 'w2': w2}
 
-    network = {'theta_1': theta_1,
-               'theta_2': theta_2}
-
-    return network
+    return parameters
 
 
-def bp_network(X, Y, n_h=26, n_input=41, n_output=10,
-               epochs=10000, trace=False,
-               learning_rate=0.0075):
-    n_x = X.shape[1]
-    n_y = Y.shape[1]
+def nn_model(X, Y, n_h, n_input, n_output,
+             num_iterations=10000, print_cost=False, learning_rate=0.02):
+    n_x = n_input
+    n_y = n_output
+    parameters = initialize_parameters(n_x, n_h, n_y)
+    # 梯度下降循环
+    for i in range(0, num_iterations):
+        a2, cache = forward_propagation(X, parameters)
+        cost = compute_cost(a2, Y)
+        grads = backward_propagation(parameters, cache, X, Y)
+        parameters = update_parameters(parameters, grads,learning_rate=learning_rate)
+        if print_cost and i % 1000 == 0:
+            print('迭代第%i次，代价函数为：%f' % (i, cost))
+    return parameters
 
-    network = init_network(n_x, n_h, n_y)
+def predict(parameters, x_test, y_test):
+    w1 = parameters['w1']
+    w2 = parameters['w2']
 
-    # 梯度下降
-    for epoch in range(epochs):
-        parameters_trace = \
-            forward_propagation(X, network)
-        cost = loss_cross_entropy(parameters_trace['a2'], Y)
-        grads = backward_propagation(network, parameters_trace,
-                                     X, Y)
-        network = update_network(network, grads, learning_rate=learning_rate)
-        if trace and epoch % 1000 == 0:
-            print('迭代第%i次，代价函数为：%f' % (epoch, cost))
-            rate = predict(network, X, Y)
-            print('准确率为:', rate)
+    z1 = np.dot(w1, x_test)
+    a1 = np.tanh(z1)
+    z2 = np.dot(w2, a1)
+    a2 = np.tanh(z2)
 
-    return network
+    n_rows = y_test.shape[0]
+    n_cols = y_test.shape[1]
+    # 预测值结果存储
+    output = np.empty(shape=(n_rows, n_cols), dtype=int)
 
-def predict(network, x_test, y_test):
-    theta_1 = network['theta_1']
-    theta_2 = network['theta_2']
-    X = x_test
-    z1 = X @ theta_1
-    a1 = sigmoid(z1)
-    z2 = a1 @ theta_2
-    a2 = sigmoid(z2)
+    for i in range(n_cols):
+        # 将每条测试数据的预测结果（概率）存为一个行向量
+        temp = np.zeros(shape=n_rows)
+        for j in range(n_rows):
+            temp[j] = a2[j][i]
 
-    m, n = y_test.shape
-    guess = 0
-    for a, b in zip(a2, y_test):
-        pre = np.argmax(a)
-        real = np.argmax(b)
-        if pre == real:
-            guess += 1
-    return guess / m
+        # 将每条结果（概率）从小到大排序，并获得相应下标
+        sorted_dist = np.argsort(temp)
+        length = len(sorted_dist)
+
+        # 将概率最大的置为1，其它置为0
+        for k in range(length):
+            if k == sorted_dist[length - 1]:
+                output[k][i] = 1
+            else:
+                output[k][i] = 0
+
+    count = 0
+    for k in range(0, n_cols):
+        if output[0][k] == y_test[0][k] and output[1][k] == y_test[1][k] and output[2][k] == y_test[2][k]:
+            count = count + 1
+
+    acc = count / int(y_test.shape[1]) * 100
+    print('预测准确率：%.2f%%' % acc)
+
+
 if __name__ == "__main__":
-    # 数据读取
-    X_row = np.array(pd.read_csv('./data/X_data.csv', header=None))
+    X_row = np.array(pd.read_csv('./data/X_data.csv',header=None))
     y_row = pd.DataFrame(pd.read_csv('./data/y_label.csv', header=None))
+
     ones = np.ones((X_row.shape[0], 1))
-    X = np.append(ones, X_row, axis=1)
+    X = np.append(ones, X_row,axis=1)
+
     Y = np.array(pd.get_dummies(
         y_row,
         columns=[0]
     ))
+    # 建立打乱序列, shuffle_ix 可以令x, y以相同的顺序打乱
     shuffle_ix = np.random.permutation(np.arange(len(X)))
     x = X[shuffle_ix]
     y = Y[shuffle_ix]
 
     row, columns = x.shape
-    percent = 0.8
+    percent = 1
     # 划分训练集和测试集
 
-    x_train = x[:int(percent * row), :]
-    y_train = y[:int(percent * row), :]
+    x_train = x[:int(percent * row), :].T
+    y_train = y[:int(percent * row), :].T
 
-    x_test = x[int(percent * row):, :]
-    y_test = y[int(percent * row):, :]
+    x_test = x[int(percent * row):, :].T
+    y_test = y[int(percent * row):, :].T
 
     # 开始训练
-    start_time = time.time()
-    network = bp_network(x_train, y_train,
-                         n_h=26, n_input=401, n_output=10,
-                         epochs=10000, trace=True,
-                         learning_rate=0.005
-                         )
-    end_time = time.time()
-    print(end_time - start_time, 's')
-    rate = predict(network,x_test,y_test)
-    print('准确率为:', rate)
+    start_time = datetime.datetime.now()
+    # 输入400个节点，隐层25个节点，输出10个节点
+    network = nn_model(x_train, y_train,
+                       n_h=26, n_input=401, n_output=10,
+                       num_iterations=80000, print_cost=True,learning_rate=0.02)
+    end_time = datetime.datetime.now()
+    print("用时：" + str((end_time - start_time).seconds)+'s')
+    predict(network, x_train, y_train)

@@ -164,7 +164,7 @@ if __name__ == "__main__":
     # 输入400个节点，隐层25个节点，输出10个节点
     network = nn_model(x_train, y_train,
                        n_h=26, n_input=401, n_output=10,
-                       num_iterations=40000, print_cost=True,learning_rate=0.02)
+                       num_iterations=80000, print_cost=True,learning_rate=0.02)
     end_time = datetime.datetime.now()
     print("用时：" + str((end_time - start_time).seconds)+'s')
     predict(network, x_train, y_train)

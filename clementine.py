@@ -139,7 +139,7 @@ def shuffle(*args):
     m, n = args[0].shape
     shuffle_ix = np.random.permutation(np.arange(m))
     for i in args:
-        data.append(args[i][shuffle_ix])
+        data.append(i[shuffle_ix])
     return data
 
 
@@ -157,7 +157,7 @@ def load_bp(percent=0.8, stander=False,is_shuffle=True):
         columns=[0]
     ))
     if is_shuffle:
-        data = shuffle(x_row,y_row)
+        data = shuffle(x_row, y_row)
         x = data[0]
         y = data[1]
         row = x.shape[0]
