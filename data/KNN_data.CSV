@@ -1,0 +1,13 @@
+throat,fever,lymph,hyperemia,headache,result
+Yes,Yes,Yes,Yes,Yes,链球菌喉炎
+No,No,No,Yes,Yes,过敏
+Yes,Yes,No,Yes,No,感冒
+Yes,No,Yes,No,No,链球菌喉炎
+No,Yes,No,Yes,No,感冒
+No,No,No,Yes,No,过敏
+No,No,Yes,No,No,链球菌喉炎
+Yes,No,No,Yes,Yes,过敏
+No,Yes,No,Yes,Yes,感冒
+Yes,Yes,No,Yes,Yes,感冒
+NO,NO ,YES,YES,YES,?
+YES,YES,NO,NO,YES,?

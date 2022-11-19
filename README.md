@@ -1,4 +1,0 @@
-Hello
-
-TEST
-TEST_LAPTOP
