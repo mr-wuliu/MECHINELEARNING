@@ -171,11 +171,13 @@ def load_bp(percent=0.8, stander=False,is_shuffle=True):
 
 
 
-def load_telco(percent=0.8, stander=True):
+def load_telco(percent=0.8, stander=True,is_shuffle=False):
     pd_reader = pd.read_csv("./data/telco.csv")
     # 用平均值对空值进行填充
     pd_reader = pd_reader.fillna(pd_reader.mean())
     result = np.array(pd_reader, dtype=np.float64)
+    if is_shuffle:
+        result = shuffle(result)[0]
     rows, columns = result.shape
     beta = percent  # 训练集占比
     # 训练集
