@@ -127,7 +127,7 @@ def predict(network_p, x_test, y_test):
 
 
 if __name__ == '__main__':
-    x_train, y_train, x_test, y_test = ct.load_bp(0.8)
+    x_train, y_train, x_test, y_test = ct.load_bp(0.9)
 
     start_time = time.time()
     network = train_dnn(x_train, y_train, 26,
