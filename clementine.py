@@ -35,7 +35,7 @@ def cost(X, theta, Y, c=False, Lambda=0):
     :param Lambda: 拟合程度
     :return:
     """
-    #h = sigmoid(X @ theta)
+    # h = sigmoid(X @ theta)
     if c:
         # loss = (-1.0 / m) * np.sum(Y.T @ np.log(h + 1e-6)
         #                            + (1 - Y).T @ np.log(1 - h + 1e-6)) \
@@ -49,10 +49,10 @@ def cost(X, theta, Y, c=False, Lambda=0):
         # loss = -1.0 * np.sum(Y.T @ np.log(h + 1e-8)
         #                      + (1 - Y).T @ np.log(1 - h + 1e-8)) \
         #        + Lambda * theta.T @ theta / 2
-        a = np.multiply(X @  theta, Y)
+        a = np.multiply(X @ theta, Y)
         b = np.log(1 + np.exp(X @ theta))
-        loss = np.sum( -a  + b )\
-                +Lambda * theta.T @ theta / 2
+        loss = np.sum(-a + b) \
+               + Lambda * theta.T @ theta / 2
     return loss
 
 
@@ -115,6 +115,7 @@ def wolfe(x, theta, y, d, c, Lambda, log=False):
         print("wolfe搜索失败")
     return alpha
 
+
 def predict(X, theta, y):
     m, n = X.shape
     pre = np.zeros((m, 1))
@@ -135,7 +136,7 @@ def shuffle(*args):
     输入给定的数据集, 全部以同一方式打乱
     :return: 返回打乱
     """
-    data= []  # 不定长数据集
+    data = []  # 不定长数据集
     m, n = args[0].shape
     shuffle_ix = np.random.permutation(np.arange(m))
     for i in args:
@@ -147,9 +148,28 @@ def shuffle(*args):
 数据读取
 '''
 
-def load_bp(percent=0.8, stander=False,is_shuffle=True):
-    x_row = np.array(pd.read_csv('./data/X_data.csv',header=None))
-    y_row = pd.read_csv('./data/y_label.csv',header=None)
+
+def load_german_clean(percent=0.8, stander=False, is_shuffle=False):
+    df = pd.read_csv('./data/german_clean.csv')
+
+    for col, index in df.items():
+
+        if (not type(index[0]) == str) and col != 'class' and stander:
+            df[col] = (df[col] - df[col].min()) / (df[col].max() - df[col].min())
+
+    if is_shuffle:
+        df = df.sample(frac=1)
+
+    X = df[[i for i in df.columns if i not in ['class']]]
+    y = df['class']
+
+    row, columns = df.shape
+    return X[0:int(row * percent)], y[0:int(row * percent)], X[int(row * percent):int(row)], y[int(row * percent):int(row)]
+
+
+def load_bp(percent=0.8, stander=False, is_shuffle=True):
+    x_row = np.array(pd.read_csv('./data/X_data.csv', header=None))
+    y_row = pd.read_csv('./data/y_label.csv', header=None)
     x_row = scrubbing(x_row, stander=stander)
     # y_row进行独热编码
     y_row = np.array(pd.get_dummies(
@@ -166,12 +186,11 @@ def load_bp(percent=0.8, stander=False,is_shuffle=True):
         x_test = x[int(percent * row):, :]
         y_test = y[int(percent * row):, :]
         return x_train, y_train, x_test, y_test
-    else :
+    else:
         return x_row, y_row
 
 
-
-def load_telco(percent=0.8, stander=True,is_shuffle=False):
+def load_telco(percent=0.8, stander=True, is_shuffle=False):
     pd_reader = pd.read_csv("./data/telco.csv")
     # 用平均值对空值进行填充
     pd_reader = pd_reader.fillna(pd_reader.mean())
@@ -231,5 +250,5 @@ def load_cancer_amazon(filename="cancer", stander=True):
 
 
 if __name__ == '__main__':
-    x_train, y_train, x_test, y_test = load_bp(is_shuffle=True)
-    print(y_test)
+    a, b, c, d = load_german_clean(percent=0.9, is_shuffle=True, stander=True)
+    print(d)
