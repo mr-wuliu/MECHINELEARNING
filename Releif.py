@@ -1,6 +1,9 @@
 import numpy as np
 import random
 import clementine as ct
+from sklearn.linear_model import LogisticRegression
+from sklearn.feature_selection import SelectFromModel
+
 
 def distance_attribute(a, b):
     """
@@ -44,10 +47,10 @@ def releif(x, y,epochs=100):
         else:
             print("ERROR")
     # 建立权重
-    theta = np.zeros(20)
+    theta = np.zeros(columns)
     # 随机抽样一百轮
-    for i in range(100):
-        item = random.randint(0, row)
+    for i in range(epochs):
+        item = random.randint(0, row-1)
         label = y.iloc[item]
         sample = x.iloc[item]
         # 最近的正例
@@ -73,19 +76,39 @@ def releif(x, y,epochs=100):
         for k in range(20):
             if str(label) == '1':
                 theta[k] = theta[k] \
-                           - distance_attribute(sample[k],near_one[k]) \
-                           + distance_attribute(sample[k], near_two[k])
-            elif str(label) == '2':
-                theta[k] = theta[k] \
                            + distance_attribute(sample[k], near_one[k]) \
                            - distance_attribute(sample[k], near_two[k])
+            elif str(label) == '2':
+                theta[k] = theta[k] \
+                           - distance_attribute(sample[k], near_one[k]) \
+                           + distance_attribute(sample[k], near_two[k])
             else:
                 print("ERROR2")
-    for i in np.argsort(theta):
-        print(x.columns[i])
+    theta = np.argsort(theta)
+    return theta[0: theta.shape[0]//2+1]
+
+
+def logistic_feature_selection(X,y):
+
+    X_scaler = X
+    lr_clf = LogisticRegression(solver='saga', max_iter=10000)
+    # 以模型系数的均值和中位数构建筛选器
+    selector_median = SelectFromModel(estimator=lr_clf, threshold='median')
+    selector_median.fit_transform(X_scaler, y)
+
+    return selector_median.get_support(indices=True)
+
+
 if __name__ == '__main__':
     x_train, y_train, x_test, y_test = ct.load_german_clean(percent=0.7,stander=True,is_shuffle=True)
+    theta_1 = releif(x_train, y_train,epochs=100)
 
-    releif(x_train, y_train,epochs=100)
+    theta_2 = logistic_feature_selection(x_train, y_train)
+
+    print(len(theta_1))
+    print(len(theta_2))
+    for i in theta_2:
+        print(x_train.columns[i])
+
 
 

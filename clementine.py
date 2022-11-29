@@ -152,15 +152,23 @@ def shuffle(*args):
 def load_german_clean(percent=0.8, stander=False, is_shuffle=False):
     df = pd.read_csv('./data/german_clean.csv')
 
-    for col, index in df.items():
+    one_hot = []  # 需要进行独热编码的列
 
+    for col, index in df.items():
         if (not type(index[0]) == str) and col != 'class' and stander:
             df[col] = (df[col] - df[col].min()) / (df[col].max() - df[col].min())
+        elif type(index[0]) == str and col != 'class':
+            one_hot.append(col)
 
+    # 打乱数据集
     if is_shuffle:
         df = df.sample(frac=1)
-
+    # 进行独热编码
     X = df[[i for i in df.columns if i not in ['class']]]
+    X = pd.get_dummies(
+        X,
+        columns=one_hot
+    )
     y = df['class']
 
     row, columns = df.shape
