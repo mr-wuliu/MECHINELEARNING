@@ -104,11 +104,10 @@ if __name__ == '__main__':
     theta_1 = releif(x_train, y_train,epochs=100)
 
     theta_2 = logistic_feature_selection(x_train, y_train)
+    print('%-30s'%"Relief","    ","     %-30s"%"Logistic")
+    for i in range(theta_1.shape[0]):
 
-    print(len(theta_1))
-    print(len(theta_2))
-    for i in theta_2:
-        print(x_train.columns[i])
+        print('%-30s'%x_train.columns[theta_1[i]], '-----', '    %-30s'%x_train.columns[theta_2[i]])
 
 
 
