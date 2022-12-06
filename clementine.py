@@ -148,6 +148,33 @@ def shuffle(*args):
 数据读取
 '''
 
+def load_DRUG1n(percent=0.8, stander=True, is_shuffle=False):
+    """
+    数据字段:
+    Age Sex BP              Cholesterol Na      K       Drug
+    23  F   HIGH/LOW/NORMAL HIGH/NORMAL float   float   drugY/C/X...
+    对于字符型, 使用异或判断距离
+    对于数字性, 归一化后取绝对值
+    :param percent: 训练集占比
+    :param stander: 标准化
+    :param is_shuffle: 是否打乱
+    :return:
+    """
+    df = pd.read_csv('./data/DRUG1n.csv')
+
+    one_hot= []  # 需要独热编码的项
+
+    for col, index in df.items():
+        if (not type(index[0]) == str) and col != 'Drug' and stander:
+            df[col] = (df[col] - df[col].min)/ (df[col].max() - df[col].min())
+        elif type(index[0]) == str and col !='Drug':
+            one_hot.append(col)
+    # 打乱数据集
+    if is_shuffle:
+        df = df.sample(frac=1)
+    X = df[[i for i in df.columns if i not in ['Drug']]]
+
+
 
 def load_german_clean(percent=0.8, stander=False, is_shuffle=False):
     df = pd.read_csv('./data/german_clean.csv')
