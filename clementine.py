@@ -162,17 +162,36 @@ def load_DRUG1n(percent=0.8, stander=True, is_shuffle=False):
     """
     df = pd.read_csv('./data/DRUG1n.csv')
 
-    one_hot= []  # 需要独热编码的项
-
-    for col, index in df.items():
-        if (not type(index[0]) == str) and col != 'Drug' and stander:
-            df[col] = (df[col] - df[col].min)/ (df[col].max() - df[col].min())
-        elif type(index[0]) == str and col !='Drug':
-            one_hot.append(col)
     # 打乱数据集
     if is_shuffle:
         df = df.sample(frac=1)
+
+    one_hot = []  # 需要独热编码的项
+
+    for col, index in df.items():
+        if (not type(index[0]) == str) and col != 'Drug' and stander:
+            df[col] = (df[col] - df[col].min() ) / (df[col].max() - df[col].min())
+        elif type(index[0]) == str and col !='Drug':
+            one_hot.append(col)
+
     X = df[[i for i in df.columns if i not in ['Drug']]]
+    X = pd.get_dummies(
+        X,
+        columns=one_hot
+    )
+
+    y = df['Drug']
+    y = pd.get_dummies(
+        y
+    )
+    row = df.shape[0]
+    if percent == 1:
+        return X, y
+
+    return X[0:int(row * percent)],\
+           y[0:int(row * percent)],\
+           X[int(row * percent):int(row)],\
+           y[int(row * percent):int(row)]
 
 
 
@@ -285,5 +304,6 @@ def load_cancer_amazon(filename="cancer", stander=True):
 
 
 if __name__ == '__main__':
-    a, b, c, d = load_german_clean(percent=0.9, is_shuffle=True, stander=True)
-    print(d)
+    a, b, c, d = load_DRUG1n(percent=0.8, is_shuffle=True, stander=True)
+    print(c)
+

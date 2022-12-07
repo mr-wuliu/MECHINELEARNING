@@ -18,16 +18,17 @@ def distance_attribute(a, b):
             return 0
         else:
             return 1
-    return abs(a-b)
+    return abs(a - b)
+
 
 def distance_sample(a, b):
     dis = 0
     for x, y in zip(a, b):
-        dis += distance_attribute(x,y)
+        dis += distance_attribute(x, y)
     return dis
 
 
-def releif(x, y,epochs=100):
+def releif(x, y, epochs=100):
     """
     :param epochs:
     :param x:
@@ -50,7 +51,7 @@ def releif(x, y,epochs=100):
     theta = np.zeros(columns)
     # 随机抽样一百轮
     for i in range(epochs):
-        item = random.randint(0, row-1)
+        item = random.randint(0, row - 1)
         label = y.iloc[item]
         sample = x.iloc[item]
         # 最近的正例
@@ -85,11 +86,10 @@ def releif(x, y,epochs=100):
             else:
                 print("ERROR2")
     theta = np.argsort(theta)
-    return theta[0: theta.shape[0]//2+1]
+    return theta[0: theta.shape[0] // 2 + 1]
 
 
-def logistic_feature_selection(X,y):
-
+def logistic_feature_selection(X, y):
     X_scaler = X
     lr_clf = LogisticRegression(solver='saga', max_iter=10000)
     # 以模型系数的均值和中位数构建筛选器
@@ -100,15 +100,11 @@ def logistic_feature_selection(X,y):
 
 
 if __name__ == '__main__':
-    x_train, y_train, x_test, y_test = ct.load_german_clean(percent=0.7,stander=True,is_shuffle=True)
-    theta_1 = releif(x_train, y_train,epochs=100)
+    x_train, y_train, x_test, y_test = ct.load_german_clean(percent=0.7, stander=True, is_shuffle=True)
+    theta_1 = releif(x_train, y_train, epochs=100)
 
     theta_2 = logistic_feature_selection(x_train, y_train)
-    print('|%-30s'%"Relief","|","     %-30s"%"Logistic|")
+    print('|%-30s' % "Relief", "|", "     %-30s" % "Logistic|")
     print('|---|---|')
     for i in range(theta_1.shape[0]):
-
-        print('|%-30s'%x_train.columns[theta_1[i]], '|', '    %-30s|'%x_train.columns[theta_2[i]])
-
-
-
+        print('|%-30s' % x_train.columns[theta_1[i]], '|', '    %-30s|' % x_train.columns[theta_2[i]])
