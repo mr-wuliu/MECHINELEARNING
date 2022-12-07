@@ -13,11 +13,17 @@ class k_meams:
         self.y = y
         self.C = [[] for i in range(k)]  # 簇划分
         self.D = self.choice_init(k, self.x)  # 初始向量
+        self.N = None  # 过程量, 判断质心是否变化
     def run(self):
         m, n = self.x.shape
-        for i in range(m):
-            
+        while check(self.N. self.D):
 
+        for i in range(m):
+
+            
+    @staticmethod
+    def check(c1, c2):
+        m, n = c1.shape
 
 
 
