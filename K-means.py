@@ -1,7 +1,7 @@
 import numpy as np
-import pandas as pd
 import clementine as ct
 import random
+import matplotlib.pyplot as plt
 
 
 class k_meams:
@@ -31,10 +31,9 @@ class k_meams:
                 vector_new = 0
                 for j in self.C[i]:
                     vector_new += self.x[j]
-                vector_new *= (1 / len(self.C[i]))
+                if len(self.C[i]):
+                    vector_new *= (1 / len(self.C[i]))
                 self.D[i] = vector_new
-    def predict(self):
-        pass
 
     def show(self):
         divide = np.zeros(self.y.shape[0])
@@ -87,7 +86,7 @@ class k_meams:
         q = set()
         m, n = x.shape
         for i in range(k):
-            item = random.randint(0, m)
+            item = random.randint(0, m-1)
             epoch = 0
             while item in q:
                 epoch += 1
@@ -100,29 +99,48 @@ class k_meams:
         return init_vector
 
 
-if __name__ == '__main__':
-    k = 5
+def run_model(k,log=False):
+    # k = 12
+
     x_train, y_train = ct.load_DRUG1n(percent=1)
     p = k_meams(x_train, y_train, k)
     # 开始分类
     p.run()
-    # 展示结果
-    print("k=%d" % k)
-    predict = p.show()
-    print("函数损失:", p.cost())
-    out = [[] for i in range(k)]
+    if log:
+        print("k=%d" % k)
+        predict = p.show()
+        print("函数损失:", p.cost())
+        out = [[] for i in range(k)]
 
-    for i in range(y_train.shape[0]):
-        out[int(predict[i])].append(np.argmax(y_train[i]))
+        for i in range(y_train.shape[0]):
+            out[int(predict[i])].append(np.argmax(y_train[i]))
 
-    for i in range(k):
-        print(out[i],"总个数%d" % len(out[i]))
-    print("原始数据统计个数")
-    list = [0 for i in range(10)]
-    for i in y_train:
-        list[np.argmax(i)] += 1
-    for i in range(k):
-        print(list[i])
+        for i in range(k):
+            print(out[i],"总个数%d" % len(out[i]))
+        print("原始数据统计个数")
+        list = [0 for i in range(5)]
+        for i in y_train:
+            list[np.argmax(i)] += 1
+        for i in range(5):
+            print(list[i])
 
 
+    return p.cost()
 
+if __name__ == '__main__':
+
+    """
+    """
+    x_i = []
+    list = []
+    for i in range(1,14):
+        x_i.append(i)
+        if i == 12:
+            list.append(run_model(i,log=False))
+        else:
+            list.append(run_model(i))
+    plt.plot(x_i, list, 's-', color='r')  # s-:方形
+    plt.xlabel("k")
+    plt.ylabel("cost")
+    plt.title('cost with k')
+    plt.show()
