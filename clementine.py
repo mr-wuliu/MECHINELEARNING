@@ -187,7 +187,8 @@ def load_DRUG1n(percent=0.8, stander=True, is_shuffle=False):
     row = df.shape[0]
     if percent == 1:
         return X, y
-
+    X = np.array(X)
+    y = np.array(y)
     return X[0:int(row * percent)],\
            y[0:int(row * percent)],\
            X[int(row * percent):int(row)],\
