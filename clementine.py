@@ -171,9 +171,11 @@ def load_DRUG1n(percent=0.8, stander=True, is_shuffle=False):
     for col, index in df.items():
         if (not type(index[0]) == str) and col != 'Drug' and stander:
             df[col] = (df[col] - df[col].min() ) / (df[col].max() - df[col].min())
+            # df[col] = 10 * df[col]
         elif type(index[0]) == str and col !='Drug':
             one_hot.append(col)
-
+    # df['Na'] = df['Na'] * 10
+    # df['K'] = df['K'] * 10
     X = df[[i for i in df.columns if i not in ['Drug']]]
     X = pd.get_dummies(
         X,
@@ -185,10 +187,11 @@ def load_DRUG1n(percent=0.8, stander=True, is_shuffle=False):
         y
     )
     row = df.shape[0]
-    if percent == 1:
-        return X, y
     X = np.array(X)
     y = np.array(y)
+    if percent == 1:
+        return X, y
+
     return X[0:int(row * percent)],\
            y[0:int(row * percent)],\
            X[int(row * percent):int(row)],\

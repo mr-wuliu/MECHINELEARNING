@@ -17,7 +17,10 @@ class k_meams:
         m, n = self.x.shape
         while self.check(self.N, self.D):
 
+            self.N = self.D.copy()
             # 为样本划分类别
+            self.C = [[] for i in range(self.k)]  # 清空旧数据
+
             for i in range(m):
                 # 在均值向量中选择最近的一个
                 cate = self.min_distance(self.x[i], self.D)
@@ -30,7 +33,6 @@ class k_meams:
                     vector_new += self.x[j]
                 vector_new *= (1 / len(self.C[i]))
                 self.D[i] = vector_new
-            self.N = self.D.copy()
     def predict(self):
         pass
 
@@ -39,14 +41,14 @@ class k_meams:
         for i in range(len(self.C)):
             for j in range(len(self.C[i])):
                 divide[self.C[i][j]] = i
-        print(divide)
         return divide
 
     def cost(self):
         cost = 0
         for i in range(len(self.C)):
             for j in range(len(self.C[i])):
-                pass
+                cost += np.linalg.norm(self.D[i]-self.x[self.C[i][j]])
+        return cost
 
 
     @staticmethod
@@ -99,13 +101,28 @@ class k_meams:
 
 
 if __name__ == '__main__':
-    x_train, y_train, x_test, y_test = ct.load_DRUG1n(percent=0.8)
-    p = k_meams(x_train, y_train, y_test.shape[1])
+    k = 5
+    x_train, y_train = ct.load_DRUG1n(percent=1)
+    p = k_meams(x_train, y_train, k)
+    # 开始分类
     p.run()
-    p.show()
+    # 展示结果
+    print("k=%d" % k)
+    predict = p.show()
+    print("函数损失:", p.cost())
+    out = [[] for i in range(k)]
 
+    for i in range(y_train.shape[0]):
+        out[int(predict[i])].append(np.argmax(y_train[i]))
 
-
+    for i in range(k):
+        print(out[i],"总个数%d" % len(out[i]))
+    print("原始数据统计个数")
+    list = [0 for i in range(10)]
+    for i in y_train:
+        list[np.argmax(i)] += 1
+    for i in range(k):
+        print(list[i])
 
 
 
