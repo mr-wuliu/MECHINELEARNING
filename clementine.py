@@ -147,6 +147,20 @@ def shuffle(*args):
 '''
 数据读取
 '''
+def load_Transactions():
+    """
+    数据集第一列为流水编号
+    第一行为属性
+    :return:
+    """
+    df = pd.read_csv('./data/Transactions.csv')
+    df = df.drop('COD',axis=1)
+    label = list(df)
+    transactions = []
+    for index, rows in df.iterrows():
+        data_temp = [label[i] for i in range(len(label)) if rows[i] == 1]
+        transactions.append(tuple(data_temp))
+    return transactions
 
 def load_DRUG1n(percent=0.8, stander=True, is_shuffle=False):
     """
@@ -308,6 +322,5 @@ def load_cancer_amazon(filename="cancer", stander=True):
 
 
 if __name__ == '__main__':
-    a, b, c, d = load_DRUG1n(percent=0.8, is_shuffle=True, stander=True)
-    print(c)
+    load_Transactions()
 
